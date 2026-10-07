@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.16</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.github.alef2509</groupId>
+    <artifactId>clean-architecture-multimodule</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>clean-architecture-multimodule</name>
+    <description>Library lending system with Clean Architecture, the dependency rule enforced by Maven modules</description>
+
+    <!-- Inner layers first: each module may only depend on the ones above it. -->
+    <modules>
+        <module>library-domain</module>
+        <module>library-application</module>
+<module>library-persistence</module>
+<module>library-web</module>
+<module>library-app</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.alef2509</groupId>
+                <artifactId>library-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.alef2509</groupId>
+                <artifactId>library-application</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.alef2509</groupId>
+                <artifactId>library-application</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.github.alef2509</groupId>
+                <artifactId>library-persistence</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.alef2509</groupId>
+                <artifactId>library-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!--
+                  The core modules (domain, application) activate this execution to fail the
+                  build if any framework sneaks in, directly or transitively. Tests may use
+                  JUnit and AssertJ only.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>framework-free-core</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <bannedDependencies>
+                                        <searchTransitive>true</searchTransitive>
+                                        <excludes>
+                                            <exclude>org.springframework*</exclude>
+                                            <exclude>jakarta.*</exclude>
+                                            <exclude>javax.*</exclude>
+                                            <exclude>org.hibernate*</exclude>
+                                            <exclude>com.fasterxml.jackson*</exclude>
+                                            <exclude>org.projectlombok</exclude>
+                                        </excludes>
+                                        <message>The core must not depend on frameworks: keep them in the adapters.</message>
+                                    </bannedDependencies>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
